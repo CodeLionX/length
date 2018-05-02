@@ -78,20 +78,53 @@ class MNISTLike(DataSet):
             with gzip.open(file_path) as handle:
                 # see IDX file format specification:
                 # http://yann.lecun.com/exdb/mnist/
+                typeSwitcher = {
+                    8: np.uint8,
+                    9: np.int8,
+                    10: np.int16,
+                    11: np.int32,
+                    12: np.float32,
+                    13: np.float64,
+                }
 
                 # TODO: read magic number/dimensions from handle
+                header = {}
+                for i in range(0, 4, 1):
+                    hexData = handle.read(1).hex()
+                    header[i] = int(hexData, 16)
+
+                assert header[0] == 0, "magic_byte error on position 0 in file %s" % file_path
+                assert header[1] == 0, "magic_byte error on position 1 in file %s" % file_path
+
+                try:
+                    data_type = typeSwitcher[header[2]]
+                except KeyError as e:
+                    raise e
+
+                n_dimensions = int(header[3])
+                dimensions = [int(handle.read(4).hex(), 16) for _ in range(n_dimensions)]
 
                 # TODO: read rest of raw data from handle into a numpy array
-                data = None
+                data = np.fromstring(handle.read(), dtype=data_type)
 
                 if "images" in target:
                     # only do this if we are reading an image file
                     # TODO: adapt the numpy array, so it has a number of dimensions equal to 1 + self.sample_dimensions
+                    shape = dimensions
+                    if n_dimensions > 1 + self.sample_dimensions:
+                        # flatten dimensions 1 to end
+                        shape = dimensions[0:1] + [int(np.prod(dimensions[1:]))]
+                    elif n_dimensions < 1 + self.sample_dimensions:
+                        shape = dimensions[0:1] + [1] + dimensions[1:]
+
+                    print("data shape before: %s" % data.shape)
+                    data = data.reshape(shape)
+                    print("data shape after: " + str(data.shape))
 
                     if self.scale is not None:
                         # convert data to internally used dtype (float)
-                        data = data.astype(DTYPE)
                         # TODO: scale data to values between zero and self.scale
+                        data = data.astype(DTYPE) * self.scale / 255
 
                 # set loaded data
                 setattr(self, target, data)

@@ -12,7 +12,7 @@ class MeanSquaredError(Function):
 
     def __init__(self):
         super().__init__()
-        # TODO: add more initialization if necessary
+        self._difference = None
 
     @staticmethod
     def create_one_hot(data, shape):
@@ -35,8 +35,8 @@ class MeanSquaredError(Function):
             x2 = self.create_one_hot(x2, x1.shape)
 
         # TODO: calculate the mean squared error of x1 and x2
-        error = np.array([np.mean(np.sum(np.square(x1i - x2i))) for x1i, x2i in zip(x1, x2)])
-        print("rmse: " + str(error))
+        self._difference = x1 - x2
+        error = np.sum(np.square(self._difference)) / self._difference.size
 
         return error,
 
@@ -45,19 +45,12 @@ class MeanSquaredError(Function):
         gx, = gradients
 
         # TODO: calculate the gradients of this function with respect to its inputs
+        derived_value = 2. / x1.size * self._difference
+        gradient_1 = derived_value * gx
+        gradient_2 = - derived_value * gx
+
         if np.issubdtype(x2.dtype, np.integer):
-            x2 = self.create_one_hot(x2, x1.shape)
-
-        print("backward input x1.shape: " + str(x1.shape))
-        print("backward input x2.shape: " + str(x2.shape))
-
-        gradient_1 = np.array([2 * np.mean(np.sum(x1i - x2i)) for x1i, x2i in zip(x1, x2)]) # d MSE / d x1
-        gradient_2 = np.array([2 * np.mean(np.sum(x2i - x1i)) for x1i, x2i in zip(x1, x2)]) # d MSE / d x2
-
-        print("grad x1: " + str(gradient_1))
-        print("grad x2: " + str(gradient_2))
-        if np.issubdtype(x2.dtype, np.integer):
-            # in case we used MSE as loss function, we won't propagate any gradients to the labels
+            # in case we used MSE as loss function, we won't propagate any gradients to the loss
             return gradient_1, None
 
         return gradient_1, gradient_2

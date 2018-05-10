@@ -19,45 +19,37 @@ class FullyConnected(Layer):
         # https://cs231n.github.io/neural-networks-1/#layers
 
         # TODO: initialize weights with correct shape, using the weight initializer 'weight_init'
-        self._weights = np.empty(shape=(num_inputs, num_outputs), dtype=DTYPE)
+        self._weights = np.empty(shape=(num_outputs, num_inputs), dtype=DTYPE)
         weight_init(self._weights)
         # TODO: initialize bias with correct shape and correct initial values
-        self.bias = np.empty(shape=(num_outputs,), dtype=DTYPE)
-        weight_init(self.bias)
+        self.bias = np.zeros(shape=(num_outputs,), dtype=DTYPE)
+        # weight_init(self.bias) -> we used zeros to init b
 
     @property
     def weights(self):
         # TODO: (if necessary) add code to transform between internal and external representation
-        return self._weights
+        return self._weights.T
 
     @weights.setter
     def weights(self, value):
         # TODO: (if necessary) add code to transform between internal and external representation
-        self._weights = value
+        self._weights = value.T
 
     def internal_forward(self, inputs):
-        # x.shape = (n_batches, pix)
         x, = inputs
         # TODO: calculate result for this layer
         # HINT: the expected shape of the result is (usually) not equal to the shape of x
-
-        #print("x.shape: " + str(x.shape))
-        print("W.shape: " + str(self._weights.shape))
-        #print("b.shape: " + str(self.bias.shape))
-        results = [np.dot(xi, self._weights) + self.bias for xi in x]
-
-        result = np.array(results, dtype=DTYPE)
+        result = np.dot(x, self._weights.T) + self.bias
         return result,
 
     def internal_backward(self, inputs, gradients):
         x, = inputs
         grad_in, = gradients
 
-        print("backward x.shape: " + str(x.shape))
         # TODO: calculate gradients with respect to inputs for this layer
-        grad_x = None # np.array([self._weights for _ in x])
-        grad_w = None
-        grad_b = None # np.full(self.bias.shape, 1, dtype=DTYPE)
+        grad_x = np.dot(grad_in, self._weights)
+        grad_w = np.dot(grad_in.T, x)
+        grad_b = np.sum(grad_in, axis=0)
 
         assert grad_x.shape == x.shape
         # the gradients of the weights should have the same shape as the internal weights array for the test case
@@ -69,5 +61,5 @@ class FullyConnected(Layer):
     def internal_update(self, parameter_deltas):
         delta_w, delta_b = parameter_deltas
         # TODO: apply updates to weights and bias according to deltas from optimizer
-        self._weights = np.add(self._weights,  delta_w)
-        self.bias = np.add(self.bias, delta_b)
+        self._weights -= delta_w
+        self.bias -= delta_b

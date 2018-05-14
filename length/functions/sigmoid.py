@@ -9,18 +9,19 @@ class Sigmoid(Function):
     def __init__(self):
         super().__init__()
         # TODO: add more initialization if necessary
+        self.sigmoid = lambda x: 1/(1 + np.exp(-x))
 
     def internal_forward(self, inputs):
         x, = inputs
         # TODO: calculate and return result of sigmoid function
-        output = x
+        output = self.sigmoid(x)
         return output,
 
     def internal_backward(self, inputs, gradients):
         x, = inputs
         grad_in, = gradients
         # TODO: calculate the gradients of this function with respect to its inputs
-        grad_x = grad_in
+        grad_x = grad_in * self.sigmoid(x) * (1 - self.sigmoid(x))
         assert grad_x.shape == x.shape
         return grad_x,
 

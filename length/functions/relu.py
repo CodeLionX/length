@@ -1,5 +1,6 @@
 import numpy as np
 
+from length.constants import DTYPE
 from length.function import Function
 
 
@@ -12,17 +13,20 @@ class Relu(Function):
     def __init__(self):
         super().__init__()
         # TODO: add more initialization if necessary
+        self.derivate = np.vectorize(lambda x: 1 if x > 0 else 0, otypes=[DTYPE])
 
     def internal_forward(self, inputs):
         x, = inputs
         # TODO: calculate forward pass of ReLU function
-        return x,
+        out = np.maximum(x, 0)
+        return out,
 
     def internal_backward(self, inputs, gradients):
         x, = inputs
         grad_in, = gradients
         # TODO: calculate gradients of ReLU function with respect to the input
-        return grad_in,
+        grad_out  = grad_in * self.derivate(x)
+        return grad_out,
 
 
 def relu(x):

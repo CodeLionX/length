@@ -65,9 +65,9 @@ def test_dropout_backward():
     gradient_checker.assert_allclose(computed_gradients, numerical_gradients)
 
 
-def test_ropout_test_mode():
+def test_dropout_test_mode():
     data = get_data()
 
-    dropout_result = dropout(data, dropout_ratio=0.5, train=False)
+    dropout_result = dropout(Graph(data), dropout_ratio=0.5, train=False)
     # there should be no changes in test mode
     gradient_checker.assert_allclose(dropout_result.data, data)

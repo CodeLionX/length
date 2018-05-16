@@ -12,16 +12,28 @@ class Dropout(Function):
             raise ValueError("dropout_ratio must be in range [0, 1)")
         self.dropout_ratio = dropout_ratio
         # TODO: add more initialization if necessary
+        self.mask = None
 
     def internal_forward(self, inputs):
         x, = inputs
         # TODO: implement forward pass of dropout function
-        return x,
+
+        # generate mask
+        self.mask = np.random.choice([0, 1], x.shape, True, [self.dropout_ratio, 1 - self.dropout_ratio])
+
+        # scale output if ratio > 0
+        if self.dropout_ratio > 0:
+            mask = self.mask * self.dropout_ratio
+        else:
+            mask = self.mask
+
+        return x * mask,
 
     def internal_backward(self, inputs, gradients):
         gradient, = gradients
         # TODO: implement backward pass of dropout function
-        return gradient,
+        out = self.mask * gradient
+        return out,
 
 
 def dropout(x, dropout_ratio=0.5, train=True):
@@ -34,4 +46,4 @@ def dropout(x, dropout_ratio=0.5, train=True):
     :return: a vector with a portion of elements zeroed out, this portion is defined by `dropout_ratio`.
     """
     # TODO: call the dropout function and handle the scenario if we are not training
-    return x
+    return Dropout(dropout_ratio)(x) if train else x

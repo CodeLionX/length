@@ -1,5 +1,5 @@
-from length.layers import FullyConnected
 import length.functions as F
+from length.layers import FullyConnected
 
 
 class MLP:
@@ -18,11 +18,12 @@ class MLP:
         """
         This runs the forward pass with the model
         :param batch: the batch which should be forwarded
+        :param train: if this forward run is training or test
         """
-        hidden = self.fully_connected_1(batch.data)
-        hidden = self.fully_connected_2(hidden)
-        self.predictions = self.fully_connected_3(hidden)
-        self.loss = F.mean_squared_error(self.predictions, batch.labels)
+        hidden = F.relu(self.fully_connected_1(batch.data))
+        hidden = F.dropout(F.relu(self.fully_connected_2(hidden)), 0.3, train)
+        self.predictions = F.relu(self.fully_connected_3(hidden))
+        self.loss = F.softmax_cross_entropy(self.predictions, batch.labels)
 
     def backward(self, optimizer):
         """

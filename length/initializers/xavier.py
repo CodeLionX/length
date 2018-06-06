@@ -16,4 +16,4 @@ class Xavier(Initializer):
     def __call__(self, array):
         # TODO: overwrite values in array with a correctly initialized one
         d_in, d_out = array.shape
-        array[...] = np.random.normal(loc=0.0, scale=np.sqrt(2/(d_in + d_out)), size=array.shape)
+        array[...] = np.random.normal(loc=0.0, scale=self.scale*np.sqrt(2/(d_in + d_out)), size=array.shape)

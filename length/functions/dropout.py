@@ -19,11 +19,11 @@ class Dropout(Function):
         # TODO: implement forward pass of dropout function
 
         # generate mask
-        self.mask = np.random.choice([0, 1], x.shape, True, [self.dropout_ratio, 1 - self.dropout_ratio])
+        self.mask = np.random.choice([0, 1], x.shape, p=[1 - self.dropout_ratio, self.dropout_ratio])
 
         # scale output if ratio > 0
         if self.dropout_ratio > 0:
-            mask = self.mask * self.dropout_ratio
+            mask = self.mask / (1 - self.dropout_ratio)
         else:
             mask = self.mask
 

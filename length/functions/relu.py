@@ -18,14 +18,14 @@ class Relu(Function):
     def internal_forward(self, inputs):
         x, = inputs
         # TODO: calculate forward pass of ReLU function
-        out = np.maximum(x, 0)
+        out = np.maximum(x, np.zeros_like(x))
         return out,
 
     def internal_backward(self, inputs, gradients):
         x, = inputs
         grad_in, = gradients
         # TODO: calculate gradients of ReLU function with respect to the input
-        grad_out  = grad_in * self.derivate(x)
+        grad_out = grad_in * self.derivate(x)
         return grad_out,
 
 
